@@ -1,0 +1,3 @@
+1) Never stop brokers from task managers
+Consequence: It will currupt topics in kafkla and crash the kafka server from running
+Solution to fix: Reinstall Kafka and delete logs from C drive temp folder  
