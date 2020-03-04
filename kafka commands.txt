@@ -28,9 +28,99 @@ step 3) If you want to create new topic, we don't really need this step,as we ar
 step 4) To start the producer 
 bin/windows/kafka-console-producer.bat --broker-list localhost:9092 --topic Kafka_Example
 
-
+my RND
 bin/windows/kafka-topics.bat --zookeeper localhost:2181 --delete --topic Kafka_Example_try_json
 
 bin/windows/kafka-topics.bat --list --zookeeper localhost:2181
 
 bin/kafka-console-producer.sh --broker-list localhost:9092
+
+------------------------------------------------------------------------
+new commands learned from session
+
+D:\kafka_2.12-2.2.0\kafka_2.12-2.2.0\bin\windows>
+zookeeper-server-start.bat ..\..\config\zookeeper.properties
+
+2. Start kafka broker:
+
+D:\kafka_2.12-2.2.0\kafka_2.12-2.2.0\bin\windows>
+set KAFKA_HEAP_OPTS=-Xmx256M -Xms128M
+kafka-server-start.bat ..\..\config\server.properties
+
+3. Verify ?
+
+D:\kafka_2.12-2.2.0\kafka_2.12-2.2.0\bin\windows>
+zookeeper-shell.bat localhost:2181 ls /brokers/ids
+
+This will list out all brokers running in the localhost
+[0] - this is the broker id, which is a configurable element
+
+
+Topic related commands:
+
+1. Create topics:
+
+
+kafka-topics.bat --zookeeper localhost:2181 --create --replication-factor 1 --partitions 1 --topic GuruTopic1
+kafka-topics.bat --zookeeper localhost:2181 --create --replication-factor 2 --partitions 1 --topic GuruTopic1
+	There will be 2 copies of this topic availble
+         One will be held by the leader (master)
+        Another will be held by the follower (slave)
+
+If the 1st copy is deleted, lost due to some reason, the 2nd copy can be used
+If you think that your data is super important and the servers are cheaper, you can create as many replications as possible
+
+2. List topics:
+
+kafka-topics.bat --zookeeper localhost:2181 --list
+
+3. Delete one topic
+
+kafka-topics.bat --zookeeper localhost:2181 --delete --topic GuruTopic12
+
+4. To publish a msg to the topic:
+
+kafka-console-producer.bat --broker-list localhost:9092 --topic GuruTopic11
+>Msg1
+>Msg2
+>Msg3
+control+c
+
+5. How to consume all messages from the beginning
+
+kafka-console-consume.bat --bootstrap-server localhost;9092 --topic GuruTopic1 --from-beginning
+
+Note:
+If due to some reason, if your brokern is shutdown, stop zookeeper server (control+c)
+Go to tmp folder (d:\tmp or c:\tmp), delete the two folders which you see (kafka-logs &zookeeper)
+Then, start zookeeper and kafka-server
+
+6. How to consume from 3rd msg (actually 4th msg) msg starts from 0
+
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic GuruTopic1 --offset 3 --partition 0
+
+7. How to consume the last msg? (Msg10)
+
+There is no direct way of doing this
+We should know what is the toal offset
+
+Use the kafka provided pre-defined java class GetoffsetShell to find out the total offset
+
+kafka-run-class.bat kafka.tools.GetOffsetShell --broker-list localhost:9092 --topic GuruTopic1
+
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic GuruTopic11 --offset 9 --partition 0
+
+8. How to display Msg from 4 to 6?
+
+(start from offset 3 and read a max of next 3 msgs)
+
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic GuruTopic11 --offset 3 --max-messages 3 --partition 0
+
+Topic ---> partitions --> messages ---> offset (location, position)
+
+
+
+
+
+
+
